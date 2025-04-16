@@ -44,6 +44,10 @@ namespace WorkShere_Backend
         List<Project> projectOnWhichWork(User user);
 
         [OperationContract]
+
+        List<Project> projectCurrentlyOnWhichWork(User user);
+
+        [OperationContract]
         string addNewFeedback(User user, int projectId, string message);
 
         [OperationContract]

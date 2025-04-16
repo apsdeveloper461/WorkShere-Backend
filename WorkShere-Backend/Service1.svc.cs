@@ -105,6 +105,10 @@ namespace WorkShere_Backend
         {
             return user.ProjectOnWhichWork();
         }
+        public List<Project> projectCurrentlyOnWhichWork(User user)
+        {
+            return user.CurrentlyOnWhichWork();
+        }
         public CompositeType GetDataUsingDataContract(CompositeType composite)
         {
             if (composite == null)
