@@ -262,6 +262,41 @@ namespace WorkShere_Backend
             return "Only admin has access to add project";
         }
 
+        public string UpdateProject(int projectid,string title,string description)
+        {
+            if (this.role == "admin")
+            {
+                DatabaseConnection dbConnection = new DatabaseConnection();
+                MySqlConnection connection = dbConnection.GetConnection();
+                try
+                {
+                    string query = "UPDATE projects SET title = @Title, description = @Description WHERE id = @ProjectId";
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@ProjectId", projectid);
+                    cmd.Parameters.AddWithValue("@Title", title);
+                    cmd.Parameters.AddWithValue("@Description", description);
+                    int result = cmd.ExecuteNonQuery();
+                    if (result > 0)
+                    {
+                        return "Project updated successfully";
+                    }
+                    else
+                    {
+                        return "Failed to update project";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception (not shown here for brevity)
+                    return "Error: " + ex.Message;
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+            return "Only admin has access to update project";
+        }
         public List<Project> GetAllProject()
         {
             if (this.role == "admin")
@@ -358,7 +393,7 @@ namespace WorkShere_Backend
                     MySqlTransaction transaction = connection.BeginTransaction();
 
                     // Change the status of the project to "complete"
-                    string updateProjectQuery = "UPDATE projects SET status = false WHERE id = @ProjectId";
+                    string updateProjectQuery = "UPDATE projects SET status = false, endDate = NOW() WHERE id = @ProjectId";
                     MySqlCommand updateProjectCmd = new MySqlCommand(updateProjectQuery, connection, transaction);
                     updateProjectCmd.Parameters.AddWithValue("@ProjectId", pid);
                     int projectResult = updateProjectCmd.ExecuteNonQuery();

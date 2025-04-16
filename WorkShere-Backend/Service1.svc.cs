@@ -87,7 +87,10 @@ namespace WorkShere_Backend
         {
             return admin.AddProject(title, description, AssignedToUserEmails);
         }
-
+        public string updateProject(User admin,int pid,string title,string description)
+        {
+            return admin.UpdateProject(pid, title, description);
+        }
         public List<Project> displayProject(User admin)
         {
             return admin.GetAllProject();
@@ -124,5 +127,7 @@ namespace WorkShere_Backend
             return user.GetFeedback(projectId);
 
         }
+
+       
     }
 }

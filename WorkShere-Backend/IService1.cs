@@ -32,6 +32,9 @@ namespace WorkShere_Backend
         string addNewProject(User admin, string title, string description, List<string> AssignedToUserEmails);
 
         [OperationContract]
+        string updateProject(User admin, int pid, string title, string description);
+
+        [OperationContract]
         List<Project> displayProject(User admin);
 
         [OperationContract]
