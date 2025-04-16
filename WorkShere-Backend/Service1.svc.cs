@@ -131,7 +131,16 @@ namespace WorkShere_Backend
             return user.GetFeedback(projectId);
 
         }
+        public string addTimeLog(User user, int projectId, string description, float workedHours, string status, DateTime date)
+        {
+            return user.AddTimeLog(projectId, description, workedHours, status, date);
+        }
 
-       
+        public List<TimeLog> getTimeLogsByUserId(User user)
+        {
+            return user.GetTimeLogsByUserId();
+        }
+
+
     }
 }

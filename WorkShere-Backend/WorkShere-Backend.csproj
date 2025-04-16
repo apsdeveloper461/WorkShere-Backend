@@ -124,6 +124,7 @@
     </Compile>
     <Compile Include="IService1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeLog.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>

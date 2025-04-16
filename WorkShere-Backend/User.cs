@@ -648,5 +648,205 @@ namespace WorkShere_Backend
                 connection.Close();
             }
         }
+
+        public string AddTimeLog(int projectId, string description, float workedHours, string status, DateTime date)
+        {
+            if(this.role != "developer")
+            {
+                return "Only developers can add time logs";
+            }
+            int developerId=this.id;
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
+
+            try
+            {
+                string query = "INSERT INTO timeLog (projectId, developerId, description, workedHours, status, date) VALUES (@ProjectId, @DeveloperId, @Description, @WorkedHours, @Status, @Date)";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@ProjectId", projectId);
+                cmd.Parameters.AddWithValue("@DeveloperId", developerId);
+                cmd.Parameters.AddWithValue("@Description", description);
+                cmd.Parameters.AddWithValue("@WorkedHours", workedHours);
+                cmd.Parameters.AddWithValue("@Status", status);
+                cmd.Parameters.AddWithValue("@Date", date);
+
+                int result = cmd.ExecuteNonQuery();
+                if (result > 0)
+                {
+                    return "Time log added successfully";
+                }
+                else
+                {
+                    return "Failed to add time log";
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (not shown here for brevity)
+                return "Error: " + ex.Message;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
+        public List<TimeLog> GetTimeLogs(int projectId)
+        {
+            List<TimeLog> timeLogList = new List<TimeLog>();
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
+
+            try
+            {
+                string query = @"
+                        SELECT 
+                            t.id, t.description, t.workedHours, t.status, t.date,
+                            p.id AS ProjectId, p.title, p.description AS projectDescription, p.status AS projectStatus, p.startDate, p.endDate,
+                            u.id AS developerId, u.role, u.name, u.email, u.password, u.activationStatus, u.workingStatus
+                        FROM 
+                            timeLog t
+                        JOIN 
+                            projects p ON t.projectId = p.id
+                        JOIN 
+                            users u ON t.developerId = u.id
+                        WHERE 
+                            t.projectId = @ProjectId";
+
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@ProjectId", projectId);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    Project project = new Project(
+                        reader.GetInt32("ProjectId"),
+                        reader.GetString("title"),
+                        reader.GetString("projectDescription"),
+                        new List<User>(),
+                        reader.GetBoolean("projectStatus"),
+                        reader.GetDateTime("startDate"),
+                        reader.IsDBNull(reader.GetOrdinal("endDate")) ? (DateTime?)null : reader.GetDateTime("endDate")
+                    );
+
+                    User developer = new User(
+                        reader.GetInt32("developerId"),
+                        reader.GetString("role"),
+                        reader.GetString("name"),
+                        reader.GetString("email"),
+                        reader.GetString("password"),
+                        reader.GetBoolean("activationStatus"),
+                        reader.GetBoolean("workingStatus")
+                    );
+
+                    TimeLog timeLog = new TimeLog(
+                        reader.GetInt32("id"),
+                        project,
+                        developer,
+                        reader.GetString("description"),
+                        reader.GetFloat("workedHours"),
+                        reader.GetString("status"),
+                        reader.GetDateTime("date")
+                    );
+                    timeLogList.Add(timeLog);
+                }
+
+                return timeLogList;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                // Log the exception (not shown here for brevity)
+                return null;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public List<TimeLog> GetTimeLogsByUserId()
+        {
+            if (this.role != "developer")
+            {
+                Debug.WriteLine("No allowed to access this function");
+                return null;
+            }
+            int userId= this.id;
+            List<TimeLog> timeLogList = new List<TimeLog>();
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
+
+            try
+            {
+                string query = @"
+            SELECT 
+                t.id, t.description, t.workedHours, t.status, t.date,
+                p.id AS ProjectId, p.title, p.description AS projectDescription, p.status AS projectStatus, p.startDate, p.endDate,
+                u.id AS developerId, u.role, u.name, u.email, u.password, u.activationStatus, u.workingStatus
+            FROM 
+                timeLog t
+            JOIN 
+                projects p ON t.projectId = p.id
+            JOIN 
+                users u ON t.developerId = u.id
+            WHERE 
+                t.developerId = @UserId";
+
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@UserId", userId);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    Project project = new Project(
+                        reader.GetInt32("ProjectId"),
+                        reader.GetString("title"),
+                        reader.GetString("projectDescription"),
+                        new List<User>(),
+                        reader.GetBoolean("projectStatus"),
+                        reader.GetDateTime("startDate"),
+                        reader.IsDBNull(reader.GetOrdinal("endDate")) ? (DateTime?)null : reader.GetDateTime("endDate")
+                    );
+
+                    User developer = new User(
+                        reader.GetInt32("developerId"),
+                        reader.GetString("role"),
+                        reader.GetString("name"),
+                        reader.GetString("email"),
+                        reader.GetString("password"),
+                        reader.GetBoolean("activationStatus"),
+                        reader.GetBoolean("workingStatus")
+                    );
+
+                    TimeLog timeLog = new TimeLog(
+                        reader.GetInt32("id"),
+                        project,
+                        developer,
+                        reader.GetString("description"),
+                        reader.GetFloat("workedHours"),
+                        reader.GetString("status"),
+                        reader.GetDateTime("date")
+                    );
+                    timeLogList.Add(timeLog);
+                }
+
+                return timeLogList;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                // Log the exception (not shown here for brevity)
+                return null;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
+
     }
 }

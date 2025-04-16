@@ -55,6 +55,14 @@ namespace WorkShere_Backend
         List<Feedback> getFeedbacks(User user, int projectId);
 
         [OperationContract]
+        string addTimeLog(User user, int projectId, string description, float workedHours, string status, DateTime date);
+
+        [OperationContract]
+
+        List<TimeLog> getTimeLogsByUserId(User user);
+
+        [OperationContract]
+
         CompositeType GetDataUsingDataContract(CompositeType composite);
 
         // TODO: Add your service operations here
