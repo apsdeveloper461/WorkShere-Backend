@@ -33,11 +33,19 @@ namespace WorkShere_Backend
 
         [OperationContract]
         List<Project> displayProject(User admin);
+
         [OperationContract]
         string markProjectAsComplete(User admin, int id);
 
         [OperationContract]
         List<Project> projectOnWhichWork(User user);
+
+        [OperationContract]
+        string addNewFeedback(User user, int projectId, string message);
+
+        [OperationContract]
+
+        List<Feedback> getFeedbacks(User user, int projectId);
 
         [OperationContract]
         CompositeType GetDataUsingDataContract(CompositeType composite);

@@ -143,6 +143,7 @@ namespace WorkShere_Backend
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine(ex.Message);
                     // Log the exception (not shown here for brevity)
                     return null;
                 }
@@ -473,6 +474,88 @@ namespace WorkShere_Backend
             }
         }
 
+        public string SendFeedback( int projectId, string message)
+        {
+            int senderId = this.id;
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
 
+            try
+            {
+                string query = "INSERT INTO feedback (senderId, projectId, message, time) VALUES (@SenderId, @ProjectId, @Message, NOW())";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@SenderId", senderId);
+                cmd.Parameters.AddWithValue("@ProjectId", projectId);
+                cmd.Parameters.AddWithValue("@Message", message);
+
+                int result = cmd.ExecuteNonQuery();
+                if (result > 0)
+                {
+                    return "yes";
+                }
+                else
+                {
+                    return "Failed to send feedback";
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (not shown here for brevity)
+                return "Error: " + ex.Message;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public List<Feedback> GetFeedback(int projectId)
+        {
+            List<Feedback> feedbackList = new List<Feedback>();
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
+
+            try
+            {
+                string query = @"
+                    SELECT 
+                        f.id, f.senderId, f.projectId, f.message, f.time, u.email AS senderEmail
+                    FROM 
+                        feedback f
+                    JOIN 
+                        users u ON f.senderId = u.id
+                    WHERE 
+                        f.projectId = @ProjectId";
+
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@ProjectId", projectId);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    Feedback feedback = new Feedback(
+                        reader.GetInt32("id"),
+                        reader.GetInt32("senderId"),
+                        reader.GetInt32("projectId"),
+                        reader.GetString("message"),
+                        reader.GetDateTime("time"),
+                        reader.GetString("senderEmail") // Populate the senderEmail attribute
+                    );
+                    feedbackList.Add(feedback);
+                }
+
+                return feedbackList;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                // Log the exception (not shown here for brevity)
+                return null;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
     }
 }

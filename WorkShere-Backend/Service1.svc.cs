@@ -114,5 +114,15 @@ namespace WorkShere_Backend
             }
             return composite;
         }
+        public string addNewFeedback(User user, int projectId, string message)
+        {
+            return user.SendFeedback(projectId, message);
+        }
+
+        public List<Feedback> getFeedbacks(User user,int projectId)
+        {
+            return user.GetFeedback(projectId);
+
+        }
     }
 }
