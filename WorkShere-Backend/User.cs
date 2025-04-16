@@ -122,7 +122,7 @@ namespace WorkShere_Backend
 
                 try
                 {
-                    string query = "SELECT * FROM users";
+                    string query = "SELECT * FROM users where id!=1";
                     MySqlCommand cmd = new MySqlCommand(query, connection);
                     MySqlDataReader reader = cmd.ExecuteReader();
 
@@ -332,5 +332,63 @@ namespace WorkShere_Backend
             }
             return null;
         }
+
+        public List<Project> ProjectOnWhichWork()
+        {
+            if (this.role == "product manager" || this.role == "developer")
+            {
+                List<Project> projects = new List<Project>();
+                DatabaseConnection dbConnection = new DatabaseConnection();
+                MySqlConnection connection = dbConnection.GetConnection();
+
+                try
+                {
+                    string query = @"
+                SELECT 
+                    p.id AS ProjectId, p.title, p.description, p.status, p.startDate, p.endDate
+                FROM 
+                    projects p
+                JOIN 
+                    project_users pu ON p.id = pu.projectId
+                WHERE 
+                    pu.userId = @UserId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@UserId", this.id);
+                    MySqlDataReader reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int projectId = reader.GetInt32("ProjectId");
+                        string title = reader.GetString("title");
+                        string description = reader.GetString("description");
+                        bool status = reader.GetBoolean("status");
+                        DateTime startDate = reader.GetDateTime("startDate");
+                        DateTime? endDate = reader.IsDBNull(reader.GetOrdinal("endDate")) ? (DateTime?)null : reader.GetDateTime("endDate");
+
+                        Project project = new Project(projectId, title, description, new List<User>(), status, startDate, endDate);
+                        projects.Add(project);
+                    }
+
+                    return projects;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    // Log the exception (not shown here for brevity)
+                    return null;
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
     }
 }

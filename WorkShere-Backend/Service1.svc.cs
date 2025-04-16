@@ -27,11 +27,6 @@ namespace WorkShere_Backend
                 return null;
             }
 
-            if (email == "admin@gmail.com" && password == "admin")
-            {
-                return new User(0, "admin", "Admin", email, password, true,true);
-            }
-
             DatabaseConnection dbConnection = new DatabaseConnection();
             MySqlConnection connection = dbConnection.GetConnection();
 
@@ -96,6 +91,11 @@ namespace WorkShere_Backend
         public List<Project> displayProject(User admin)
         {
             return admin.GetAllProject();
+        }
+
+        public List<Project> projectOnWhichWork(User user)
+        {
+            return user.ProjectOnWhichWork();
         }
         public CompositeType GetDataUsingDataContract(CompositeType composite)
         {

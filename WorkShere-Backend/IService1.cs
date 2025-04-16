@@ -33,6 +33,10 @@ namespace WorkShere_Backend
 
         [OperationContract]
         List<Project> displayProject(User admin);
+
+        [OperationContract]
+        List<Project> projectOnWhichWork(User user);
+
         [OperationContract]
         CompositeType GetDataUsingDataContract(CompositeType composite);
 
