@@ -333,6 +333,90 @@ namespace WorkShere_Backend
             return null;
         }
 
+        public string MarkProjectAsComplete(int pid)
+        {
+            if (this.role == "admin")
+            {
+                DatabaseConnection dbConnection = new DatabaseConnection();
+                MySqlConnection connection = dbConnection.GetConnection();
+
+                try
+                {
+                    // Check if the project is already completed
+                    string checkProjectStatusQuery = "SELECT status FROM projects WHERE id = @ProjectId";
+                    MySqlCommand checkProjectStatusCmd = new MySqlCommand(checkProjectStatusQuery, connection);
+                    checkProjectStatusCmd.Parameters.AddWithValue("@ProjectId", pid);
+                    bool projectStatus = (bool)checkProjectStatusCmd.ExecuteScalar();
+
+                    if (!projectStatus)
+                    {
+                        return "Project is already marked as complete";
+                    }
+
+                    // Start a transaction
+                    MySqlTransaction transaction = connection.BeginTransaction();
+
+                    // Change the status of the project to "complete"
+                    string updateProjectQuery = "UPDATE projects SET status = false WHERE id = @ProjectId";
+                    MySqlCommand updateProjectCmd = new MySqlCommand(updateProjectQuery, connection, transaction);
+                    updateProjectCmd.Parameters.AddWithValue("@ProjectId", pid);
+                    int projectResult = updateProjectCmd.ExecuteNonQuery();
+
+                    if (projectResult > 0)
+                    {
+                        // Get the user IDs from the project_users table who are working on this project
+                        string getUserIdsQuery = "SELECT userId FROM project_users WHERE projectId = @ProjectId";
+                        MySqlCommand getUserIdsCmd = new MySqlCommand(getUserIdsQuery, connection, transaction);
+                        getUserIdsCmd.Parameters.AddWithValue("@ProjectId", pid);
+                        MySqlDataReader reader = getUserIdsCmd.ExecuteReader();
+
+                        List<int> userIds = new List<int>();
+                        while (reader.Read())
+                        {
+                            userIds.Add(reader.GetInt32("userId"));
+                        }
+                        reader.Close();
+
+                        // Update their working status to false
+                        foreach (int userId in userIds)
+                        {
+                            string updateUserQuery = "UPDATE users SET workingStatus = false WHERE id = @UserId";
+                            MySqlCommand updateUserCmd = new MySqlCommand(updateUserQuery, connection, transaction);
+                            updateUserCmd.Parameters.AddWithValue("@UserId", userId);
+                            updateUserCmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction
+                        transaction.Commit();
+                        return "Project marked as complete and users' working status updated successfully";
+                    }
+                    else
+                    {
+                        // Rollback the transaction if the project update failed
+                        transaction.Rollback();
+                        return "Failed to mark project as complete";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    // Log the exception (not shown here for brevity)
+                    return "Error: " + ex.Message;
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+            else
+            {
+                return "You do not have access to this function";
+            }
+        }
+
+
+
+
         public List<Project> ProjectOnWhichWork()
         {
             if (this.role == "product manager" || this.role == "developer")

@@ -93,6 +93,11 @@ namespace WorkShere_Backend
             return admin.GetAllProject();
         }
 
+        public string markProjectAsComplete(User admin, int id)
+        {
+            return admin.MarkProjectAsComplete(id);
+        }   
+
         public List<Project> projectOnWhichWork(User user)
         {
             return user.ProjectOnWhichWork();

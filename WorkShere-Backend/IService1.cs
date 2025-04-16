@@ -33,6 +33,8 @@ namespace WorkShere_Backend
 
         [OperationContract]
         List<Project> displayProject(User admin);
+        [OperationContract]
+        string markProjectAsComplete(User admin, int id);
 
         [OperationContract]
         List<Project> projectOnWhichWork(User user);
