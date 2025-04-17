@@ -63,6 +63,19 @@ namespace WorkShere_Backend
 
         [OperationContract]
 
+        List<TimeLog> getTimeLogsByProjectId(User user, int projectid);
+
+        [OperationContract]
+
+        string updateTimeLogStatus(User user, int timeLogId, string status);
+
+        [OperationContract]
+
+        string updatePassword(User user, string newPassword);
+
+
+        [OperationContract]
+
         CompositeType GetDataUsingDataContract(CompositeType composite);
 
         // TODO: Add your service operations here

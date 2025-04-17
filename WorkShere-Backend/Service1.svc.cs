@@ -141,6 +141,19 @@ namespace WorkShere_Backend
             return user.GetTimeLogsByUserId();
         }
 
+        public List<TimeLog> getTimeLogsByProjectId(User user, int projectid)
+        {
+            return user.GetTimeLogs(projectid);
+        }
+        public string updateTimeLogStatus(User user, int timeLogId, string status)
+        {
+            return user.UpdateTimeLogStatus(timeLogId, status);
+        }
+
+        public string updatePassword(User user, string newPassword)
+        {
+            return user.UpdatePassword(newPassword);
+        }
 
     }
 }

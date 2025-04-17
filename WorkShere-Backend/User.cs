@@ -847,6 +847,98 @@ namespace WorkShere_Backend
         }
 
 
+        public string UpdateTimeLogStatus(int TimeLogId, string newStatus)
+        {
+            if (this.role != "product manager")
+            {
+                return "You can't have access to this function";
+            }
+
+            if (newStatus != "pending" && newStatus != "approved" && newStatus != "reject")
+            {
+                return "Invalid status. Allowed values are 'pending', 'approved', or 'reject'.";
+            }
+
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
+
+            try
+            {
+                string query = "UPDATE timeLog SET status = @NewStatus WHERE id = @TimeLogId";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@NewStatus", newStatus);
+                cmd.Parameters.AddWithValue("@TimeLogId", TimeLogId);
+
+                int result = cmd.ExecuteNonQuery();
+                if (result > 0)
+                {
+                    return "Time log status updated successfully";
+                }
+                else
+                {
+                    return "Failed to update time log status. Time log not found.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                // Log the exception (not shown here for brevity)
+                return "Error: " + ex.Message;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
+        public string UpdatePassword(string newPassword)
+        {
+            if (this.role == "product manager" || this.role == "developer")
+            {
+                if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+                {
+                    return "Password must be at least 6 characters long and cannot be empty.";
+                }
+
+                DatabaseConnection dbConnection = new DatabaseConnection();
+                MySqlConnection connection = dbConnection.GetConnection();
+
+                try
+                {
+                    string query = "UPDATE users SET password = @NewPassword WHERE id = @UserId";
+                    MySqlCommand cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@NewPassword", newPassword);
+                    cmd.Parameters.AddWithValue("@UserId", this.id);
+
+                    int result = cmd.ExecuteNonQuery();
+                    if (result > 0)
+                    {
+                        return "Password updated successfully.";
+                    }
+                    else
+                    {
+                        return "Failed to update password. User not found.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    // Log the exception (not shown here for brevity)
+                    return "Error: " + ex.Message;
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+            else
+            {
+                return "Not allowed to update Password";
+            }
+        }
+
+
 
     }
 }
