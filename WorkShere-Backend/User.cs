@@ -939,6 +939,134 @@ namespace WorkShere_Backend
         }
 
 
+        public float TotalTimeLogOnProject(int projectid)
+        {
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
+            try
+            {
+                string query = "SELECT SUM(workedHours) FROM timeLog WHERE projectId = @ProjectId";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@ProjectId", projectid);
+                object result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    return Convert.ToSingle(result);
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                // Log the exception (not shown here for brevity)
+                return 0;
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+        }
+
+
+        public string AddFinanceOfProject(int projectId, float hourly_rate, float managementCost)
+        {
+            if(this.role != "admin")
+            {
+                return "Only admin can add finance";
+            }
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
+            try
+            {
+                string query = "INSERT INTO finance (projectId, hourly_rate, managementCost) VALUES (@ProjectId, @HourlyRate, @ManagementCost)";
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@ProjectId", projectId);
+                cmd.Parameters.AddWithValue("@HourlyRate", hourly_rate);
+                cmd.Parameters.AddWithValue("@ManagementCost", managementCost);
+                int result = cmd.ExecuteNonQuery();
+                if (result > 0)
+                {
+                    return "Finance added successfully";
+                }
+                else
+                {
+                    return "Failed to add finance";
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (not shown here for brevity)
+                return "Error: " + ex.Message;
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+        }
+
+        public List<Finance> GetAllFinance()
+        {
+            if (this.role != "admin")
+            {
+                return null; // Only admin can access this function
+            }
+
+            List<Finance> financeList = new List<Finance>();
+            DatabaseConnection dbConnection = new DatabaseConnection();
+            MySqlConnection connection = dbConnection.GetConnection();
+            try
+            {
+                string query = @"
+        SELECT 
+            f.id, 
+            f.projectId, 
+            p.title AS name, 
+            f.hourly_rate, 
+            f.managementCost, 
+            f.created_date,
+            (SELECT SUM(t.workedHours) FROM timeLog t WHERE t.projectId = f.projectId) AS total_hours,
+            (f.managementCost + ((SELECT SUM(t.workedHours) FROM timeLog t WHERE t.projectId = f.projectId) * f.hourly_rate)) AS total_cost_of_project
+        FROM 
+            finance f
+        JOIN 
+            projects p ON f.projectId = p.id";
+
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    Finance finance = new Finance(
+                        reader.GetInt32("id"),
+                        reader.GetInt32("projectId"),
+                        reader.GetString("name"),
+                        reader.GetFloat("hourly_rate"),
+                        reader.GetFloat("managementCost"),
+                        reader.IsDBNull(reader.GetOrdinal("total_hours")) ? 0 : reader.GetFloat("total_hours"),
+                        reader.IsDBNull(reader.GetOrdinal("total_cost_of_project")) ? 0 : reader.GetFloat("total_cost_of_project"),
+                        reader.GetDateTime("created_date")
+                    );
+                    financeList.Add(finance);
+                }
+                return financeList;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                // Log the exception (not shown here for brevity)
+                return null;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
 
     }
 }

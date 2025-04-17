@@ -73,6 +73,12 @@ namespace WorkShere_Backend
 
         string updatePassword(User user, string newPassword);
 
+        [OperationContract]
+
+        string addFinance(User user, int projectId, float hourlyRate, float managementCost);
+
+        [OperationContract]
+        List<Finance> getFinance(User user);
 
         [OperationContract]
 

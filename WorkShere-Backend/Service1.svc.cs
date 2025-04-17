@@ -155,5 +155,16 @@ namespace WorkShere_Backend
             return user.UpdatePassword(newPassword);
         }
 
+
+        public string addFinance(User user, int projectId, float hourlyRate, float managementCost)
+        {
+            return user.AddFinanceOfProject(projectId, hourlyRate, managementCost);
+        }
+
+        public List<Finance> getFinance(User user)
+        {
+            return user.GetAllFinance();
+        }
+
     }
 }
