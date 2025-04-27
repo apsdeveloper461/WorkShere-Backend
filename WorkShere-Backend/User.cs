@@ -1029,8 +1029,8 @@ namespace WorkShere_Backend
             f.hourly_rate, 
             f.managementCost, 
             f.created_date,
-            (SELECT SUM(t.workedHours) FROM timeLog t WHERE t.projectId = f.projectId) AS total_hours,
-            (f.managementCost + ((SELECT SUM(t.workedHours) FROM timeLog t WHERE t.projectId = f.projectId) * f.hourly_rate)) AS total_cost_of_project
+            (SELECT SUM(t.workedHours) FROM timeLog t WHERE t.projectId = f.projectId AND t.status = 'approved') AS total_hours,
+            (f.managementCost + ((SELECT SUM(t.workedHours) FROM timeLog t WHERE t.projectId = f.projectId AND t.status = 'approved') * f.hourly_rate)) AS total_cost_of_project
         FROM 
             finance f
         JOIN 
@@ -1066,7 +1066,6 @@ namespace WorkShere_Backend
                 connection.Close();
             }
         }
-
 
     }
 }
